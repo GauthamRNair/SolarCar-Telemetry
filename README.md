@@ -20,10 +20,15 @@ ESP32 BLE client that connects to Redodo batteries and exposes telemetry data vi
 
 Copy the example secrets file:
 ```bash
-cp secrets.h.example secrets.h
+cp src/secrets.h.example src/secrets.h
 ```
 
-Edit `secrets.h` with your WiFi and battery MAC:
+PowerShell equivalent:
+```powershell
+Copy-Item src\secrets.h.example src\secrets.h
+```
+
+Edit `src/secrets.h` with your WiFi and battery MAC:
 ```cpp
 #define WIFI_SSID "your_wifi_name"
 #define WIFI_PASSWORD "your_password"
@@ -53,6 +58,7 @@ Returns JSON with current battery telemetry:
 
 ```json
 {
+  "timestamp": 1741392000,
   "mac": "C8:47:80:1C:E2:85",
   "connected": true,
   "voltage": 25.6,

@@ -1,15 +1,42 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <time.h>
 #include <ESPAsyncWebServer.h>
 #include <BMSClient.h>
-#include <secrets.h>
+#include "secrets.h"
 
 BMSClient bmsClient;
 AsyncWebServer server(80);
 unsigned long lastUpdateMs = 0;
 
+uint64_t getUnixTimestampUtc() {
+    time_t now = time(nullptr);
+    return (now > 0) ? static_cast<uint64_t>(now) : 0ULL;
+}
+
+void syncTimeWithNtp() {
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+    Serial.print("Syncing UTC time");
+
+    time_t now = time(nullptr);
+    int retries = 0;
+    while (now < 1700000000 && retries < 20) {
+        delay(500);
+        Serial.print(".");
+        now = time(nullptr);
+        retries++;
+    }
+
+    if (now >= 1700000000) {
+        Serial.println(" synced!");
+    } else {
+        Serial.println(" failed (timestamp will be 0 until sync completes)");
+    }
+}
+
 String getBatteryJSON() {
     String json = "{";
+    json += "\"timestamp\":" + String((unsigned long)getUnixTimestampUtc()) + ",";
     json += "\"mac\":\"" + String(BATTERY_MAC) + "\",";
     json += "\"connected\":" + String(bmsClient.isConnected() ? "true" : "false") + ",";
     json += "\"voltage\":" + String(bmsClient.getTotalVoltage(), 2) + ",";
@@ -54,8 +81,14 @@ void setup() {
     Serial.print("API Endpoint: http://");
     Serial.print(WiFi.localIP());
     Serial.println("/api/battery");
+
+    syncTimeWithNtp();
     
     // Setup API server
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "application/json; charset=UTF-8", getBatteryJSON());
+    });
+    
     server.on("/api/battery", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(200, "application/json; charset=UTF-8", getBatteryJSON());
     });

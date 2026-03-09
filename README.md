@@ -1,122 +1,63 @@
 # Redodo Battery Telemetry API
 
-ESP32 BLE client that connects to Redodo batteries and exposes telemetry data via HTTP JSON API.
+## Overview
+
+This project implements a Bluetooth Low Energy (BLE) client for the ESP32 microcontroller platform. It connects to Redodo lithium iron phosphate (LiFePO4) batteries and reads real-time telemetry data. The telemetry logic resides in the `src/` directory.
 
 ## Features
 
-- ✅ Connects to Redodo battery via Bluetooth Low Energy (BLE)
-- ✅ Exposes JSON API endpoint with real-time battery data
-- ✅ Auto-reconnect on connection loss
-- ✅ Ready for ngrok/Cloudflare tunnel for global access
+- BLE connectivity to Redodo battery management systems
+- Real-time battery telemetry acquisition
+- Automatic reconnection upon connection loss
 
-## Hardware
+## Hardware Requirements
 
-- ESP32-S3 DevKit C-1 (or compatible ESP32 with BLE)
-- Redodo battery with BLE (tested with R-51100GBN250)
+| Component | Specification |
+|---|---|
+| Microcontroller | ESP32-S3 DevKit C-1 (or any ESP32 variant with BLE support) |
+| Battery | Redodo battery with BLE capability (validated with model R-51100GBN250) |
 
-## Setup
+## Installation and Configuration
 
-### 1. Configure Credentials
+### Step 1: Configure Credentials
 
-Copy the example secrets file:
+Create the secrets header file by copying the provided template:
+
+**Unix/macOS:**
 ```bash
 cp src/secrets.h.example src/secrets.h
 ```
 
-PowerShell equivalent:
+**Windows (PowerShell):**
 ```powershell
 Copy-Item src\secrets.h.example src\secrets.h
 ```
 
-Edit `src/secrets.h` with your WiFi and battery MAC:
+Open `src/secrets.h` and populate the following fields with the appropriate values:
+
 ```cpp
 #define WIFI_SSID "your_wifi_name"
 #define WIFI_PASSWORD "your_password"
-#define BATTERY_MAC "C8:47:80:1C:E2:85"
+
+// Will not be the same between batteries
+#define BATTERY_MAC "C8:47:80:1C:E2:85" 
 ```
 
-### 2. Build and Upload
+### Step 2: Build and Upload Firmware
+
+Compile the firmware and flash it to the ESP32, then open the serial monitor to verify operation:
 
 ```bash
 pio run --target upload
 pio device monitor
 ```
 
-### 3. Get API Endpoint
 
-After WiFi connects, serial monitor will show:
-```
-IP Address: 192.168.1.123
-API Endpoint: http://192.168.1.123/api/battery
-```
 
-## API Endpoint
+## Multi-Battery Deployment
 
-**GET** `/api/battery`
-
-Returns JSON with current battery telemetry:
-
-```json
-{
-  "timestamp": 1741392000,
-  "mac": "C8:47:80:1C:E2:85",
-  "connected": true,
-  "voltage": 25.6,
-  "current": 2.5,
-  "soc": 85,
-  "soh": "100%",
-  "mosfetTemp": 18,
-  "cellTemp": 17,
-  "remainingAh": 42.5,
-  "fullCapacityAh": 50.0,
-  "protectionState": "Normal",
-  "balancingState": "Idle",
-  "batteryState": "Discharging",
-  "dischargeCycles": 12,
-  "cellVoltages": [3.2, 3.21, 3.2, 3.19, 3.2, 3.21, 3.2, 3.2]
-}
-```
-
-## Global Access with ngrok
-
-Make your local API globally accessible:
-
-```bash
-ngrok http 192.168.1.123:80
-```
-
-Your endpoint becomes:
-```
-https://xyz123.ngrok-free.app/api/battery
-```
-
-For free alternative, see [Cloudflare Tunnel setup](NGROK_SETUP.md).
-
-## Usage Examples
-
-**cURL:**
-```bash
-curl http://192.168.1.123/api/battery
-```
-
-**JavaScript:**
-```javascript
-fetch('http://192.168.1.123/api/battery')
-  .then(res => res.json())
-  .then(data => console.log(`${data.voltage}V, ${data.soc}%`));
-```
-
-**Python:**
-```python
-import requests
-r = requests.get('http://192.168.1.123/api/battery')
-print(r.json()['voltage'])
-```
-
-## Multiple Batteries
-
-Deploy multiple ESP32s, each with different battery MAC addresses. Each will expose its own endpoint that can be aggregated by an external dashboard.
+This system supports monitoring multiple batteries simultaneously. Each battery requires a dedicated ESP32 configured with the corresponding BLE MAC address.
 
 ## License
 
-MIT
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

@@ -92,12 +92,28 @@ cd raspberry-pi
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Fix SSL/certificate issues on Pi before installing packages
+# Fix SSL/certificate issues on Pi (old pip versions fail TLS handshake with PyPI)
 sudo apt install -y ca-certificates
-pip install --upgrade pip setuptools
 
+# Bootstrap pip upgrade using --trusted-host to work around SSL errors
+pip install \
+  --trusted-host pypi.org \
+  --trusted-host files.pythonhosted.org \
+  --trusted-host pypi.python.org \
+  --upgrade pip setuptools
+
+# Install dependencies (trusted-host flags not needed once pip is modern)
 pip install -r requirements.txt
 ```
+
+> **If you still get SSL errors after upgrading pip**, install packages with the trusted-host flags directly:
+> ```bash
+> pip install \
+>   --trusted-host pypi.org \
+>   --trusted-host files.pythonhosted.org \
+>   --trusted-host pypi.python.org \
+>   -r requirements.txt
+> ```
 
 ### Configure Battery MAC (Required)
 

@@ -117,6 +117,16 @@ pip install -r requirements.txt
 
 > **If your Pi package indexes only expose older Flask builds**, that is fine for this project. The Pi app only uses basic Flask routing and JSON responses, and [raspberry-pi/requirements.txt](raspberry-pi/requirements.txt) is pinned to `flask==1.1.4` for compatibility.
 
+> **If pip still cannot find a matching `bleak` build**, install the latest version your package index exposes or use the OS package instead:
+> ```bash
+> sudo apt install -y python3-bleak
+> ```
+> Then retry:
+> ```bash
+> pip install flask==1.1.4
+> ```
+> The Pi code only relies on core `bleak` features (`BleakClient`, `BleakScanner`, notifications, and GATT writes), so it does not require a modern 0.20+ release.
+
 ### Configure Battery MAC (Required)
 
 Set your battery MAC before running:

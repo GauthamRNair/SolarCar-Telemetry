@@ -24,7 +24,7 @@ class RedodoBMS:
     def __init__(self, mac_address: str):
         self.mac_address = mac_address
         self.client = None
-        self.data: Dict = {
+        self.data = {
             'connected': False,
             'voltage': 0.0,
             'current': 0.0,

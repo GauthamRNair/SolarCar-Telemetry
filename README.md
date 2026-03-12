@@ -91,7 +91,11 @@ From the repository root:
 cd raspberry-pi
 python3 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
+
+# Fix SSL/certificate issues on Pi before installing packages
+sudo apt install -y ca-certificates
+pip install --upgrade pip setuptools
+
 pip install -r requirements.txt
 ```
 

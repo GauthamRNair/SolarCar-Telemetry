@@ -102,7 +102,7 @@ pip install \
   --trusted-host pypi.python.org \
   --upgrade pip setuptools
 
-# Install dependencies (trusted-host flags not needed once pip is modern)
+# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -114,6 +114,8 @@ pip install -r requirements.txt
 >   --trusted-host pypi.python.org \
 >   -r requirements.txt
 > ```
+
+> **If your Pi package indexes only expose older Flask builds**, that is fine for this project. The Pi app only uses basic Flask routing and JSON responses, and [raspberry-pi/requirements.txt](raspberry-pi/requirements.txt) is pinned to `flask==1.1.4` for compatibility.
 
 ### Configure Battery MAC (Required)
 

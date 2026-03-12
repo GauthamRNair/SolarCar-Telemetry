@@ -10,7 +10,7 @@ import asyncio
 import os
 import threading
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from flask import Flask, jsonify
 
@@ -22,7 +22,7 @@ class BatteryTelemetryService:
         self.mac_address = mac_address
         self.update_interval_s = update_interval_s
         self._stop_event = threading.Event()
-        self._thread: threading.Thread | None = None
+        self._thread: Optional[threading.Thread] = None
         self._lock = threading.Lock()
         self._latest_payload: Dict[str, Any] = self._empty_payload()
 

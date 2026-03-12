@@ -6,6 +6,8 @@
 
 .env.*
 .env
+**.env
+
 .log
 secrets.h
 src/secrets.h

@@ -23,7 +23,7 @@ QUERY_COMMAND = bytes([0xDD, 0xA5, 0x03, 0x00, 0xFF, 0xFD, 0x77])
 class RedodoBMS:
     def __init__(self, mac_address: str):
         self.mac_address = mac_address
-        self.client: Optional[BleakClient] = None
+        self.client = None
         self.data: Dict = {
             'connected': False,
             'voltage': 0.0,
@@ -46,7 +46,7 @@ class RedodoBMS:
     async def connect(self) -> bool:
         """Connect to the BMS via BLE"""
         try:
-            logger.info(f"Connecting to {self.mac_address}...")
+            logger.info("Connecting to %s...", self.mac_address)
             self.client = BleakClient(self.mac_address, timeout=10.0)
             await self.client.connect()
             
@@ -58,7 +58,7 @@ class RedodoBMS:
                 return True
             return False
         except Exception as e:
-            logger.error(f"Connection failed: {e}")
+            logger.error("Connection failed: %s", e)
             self.data['connected'] = False
             return False
 
@@ -73,7 +73,7 @@ class RedodoBMS:
         """Handle incoming BLE notifications"""
         self._last_response = bytes(data)
         self._notification_event.set()
-        logger.debug(f"Received {len(data)} bytes: {data.hex()}")
+        logger.debug("Received %d bytes: %s", len(data), data.hex())
 
     async def update(self):
         """Request and update battery data"""
@@ -102,7 +102,7 @@ class RedodoBMS:
             return False
 
         except Exception as e:
-            logger.error(f"Update failed: {e}")
+            logger.error("Update failed: %s", e)
             self.data['connected'] = False
             return False
 
@@ -110,7 +110,7 @@ class RedodoBMS:
         """Parse BMS response data"""
         try:
             if len(data) < 20:
-                logger.warning(f"Response too short: {len(data)} bytes")
+                logger.warning("Response too short: %d bytes", len(data))
                 return
 
             # Parse based on Redodo BMS protocol
@@ -147,10 +147,15 @@ class RedodoBMS:
             self.data['protection_state'] = 'Normal'
             self.data['battery_state'] = 'Charging' if self.data['current'] > 0 else 'Discharging'
             
-            logger.info(f"Updated: {self.data['voltage']:.2f}V, {self.data['current']:.2f}A, SOC: {self.data['soc']}%")
+            logger.info(
+                "Updated: %.2fV, %.2fA, SOC: %s%%",
+                self.data['voltage'],
+                self.data['current'],
+                self.data['soc'],
+            )
             
         except Exception as e:
-            logger.error(f"Parse error: {e}")
+            logger.error("Parse error: %s", e)
 
     def get_data(self) -> Dict:
         """Get current battery data"""
@@ -165,7 +170,7 @@ async def scan_for_redodo_batteries(timeout: float = 5.0) -> List[str]:
     redodo_devices = []
     for device in devices:
         if device.name and device.name.startswith("R-"):
-            logger.info(f"Found: {device.name} ({device.address})")
+            logger.info("Found: %s (%s)", device.name, device.address)
             redodo_devices.append(device.address)
     
     return redodo_devices
@@ -189,10 +194,10 @@ async def main():
             while True:
                 await bms.update()
                 data = bms.get_data()
-                print(f"\nVoltage: {data['voltage']:.2f}V")
-                print(f"Current: {data['current']:.2f}A")
-                print(f"SOC: {data['soc']}%")
-                print(f"Remaining: {data['remaining_ah']:.2f}Ah")
+                print("\nVoltage: {:.2f}V".format(data['voltage']))
+                print("Current: {:.2f}A".format(data['current']))
+                print("SOC: {}%".format(data['soc']))
+                print("Remaining: {:.2f}Ah".format(data['remaining_ah']))
                 await asyncio.sleep(2)
         except KeyboardInterrupt:
             logger.info("Stopping...")
@@ -201,4 +206,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
